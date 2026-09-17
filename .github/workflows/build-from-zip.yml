@@ -1,0 +1,38 @@
+name: Build CarGreeter APK
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Extract project
+        run: |
+          mkdir extracted
+          unzip -q CarGreeter-Native-Kotlin-APK-Ready.zip -d extracted
+          echo "Extracted files:"
+          find extracted -maxdepth 3 -type f | head -50
+
+      - name: Setup JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build APK
+        working-directory: extracted/CarGreeter
+        run: gradle assembleDebug --no-daemon
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: CarGreeter-debug
+          path: extracted/CarGreeter/app/build/outputs/apk/debug/app-debug.apk
